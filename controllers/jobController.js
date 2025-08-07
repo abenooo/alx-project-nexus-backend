@@ -1,4 +1,6 @@
 const Job = require('../models/Job');
+const User = require('../models/User');
+
 
 // @POST /api/jobs
 const createJob = async (req, res) => {
@@ -54,10 +56,47 @@ const filterJobs = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
-
+// @POST /api/jobs/:id/save
+const saveJob = async (req, res) => {
+    try {
+      const jobId = req.params.id;
+      const user = await User.findById(req.userId);
+  
+      if (user.savedJobs.includes(jobId)) {
+        return res.status(400).json({ msg: 'Job already saved' });
+      }
+  
+      user.savedJobs.push(jobId);
+      await user.save();
+  
+      res.json({ msg: 'Job saved' });
+    } catch (err) {
+      res.status(500).json({ msg: err.message });
+    }
+  };
+  
+  // @DELETE /api/jobs/:id/save
+  const unsaveJob = async (req, res) => {
+    try {
+      const jobId = req.params.id;
+      const user = await User.findById(req.userId);
+  
+      user.savedJobs = user.savedJobs.filter(
+        (savedJobId) => savedJobId.toString() !== jobId
+      );
+  
+      await user.save();
+      res.json({ msg: 'Job unsaved' });
+    } catch (err) {
+      res.status(500).json({ msg: err.message });
+    }
+  };    
 module.exports = {
   createJob,
   getAllJobs,
   getJobById,
-  filterJobs
+  filterJobs,
+  saveJob,
+  unsaveJob
+  
 };

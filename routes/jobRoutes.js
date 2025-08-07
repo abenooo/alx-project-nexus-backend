@@ -9,7 +9,10 @@ const {
 const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
-
+const { saveJob, unsaveJob } = require('../controllers/jobController');
+// Save/Unsave
+router.post('/:id/save', authMiddleware, saveJob);
+router.delete('/:id/save', authMiddleware, unsaveJob);
 // Public
 router.get('/', getAllJobs);         // List all jobs
 router.get('/filter', filterJobs);   // Filter jobs
