@@ -61,4 +61,39 @@ const saveJob = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile, getSavedJobs, saveJob };
+// @route DELETE /api/users/me/saved/:jobId
+const unsaveJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    
+    if (!jobId) {
+      return res.status(400).json({ msg: 'Job ID is required' });
+    }
+
+    // Remove job from user's saved jobs
+    const user = await User.findById(req.userId);
+    const initialLength = user.savedJobs.length;
+    
+    user.savedJobs = user.savedJobs.filter(
+      savedJobId => savedJobId.toString() !== jobId
+    );
+
+    if (user.savedJobs.length === initialLength) {
+      return res.status(404).json({ msg: 'Job not found in saved jobs' });
+    }
+
+    await user.save();
+    res.json({ msg: 'Job removed from saved jobs' });
+  } catch (err) {
+    console.error('Error unsaving job:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+module.exports = { 
+  getProfile, 
+  updateProfile, 
+  getSavedJobs, 
+  saveJob, 
+  unsaveJob 
+};
